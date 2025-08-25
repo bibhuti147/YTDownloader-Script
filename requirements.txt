@@ -1,4 +1,2 @@
 fastapi
-pytubefix
-pytubefix.cli
-fastapi.staticfiles
+pytubefi
