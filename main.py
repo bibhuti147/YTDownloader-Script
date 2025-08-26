@@ -4,6 +4,7 @@ from pytubefix import YouTube
 from pytubefix.cli import on_progress
 from fastapi.middleware.cors import CORSMiddleware
 import io
+import traceback
 
 app = FastAPI()
 
@@ -31,16 +32,21 @@ async def download_video(request: Request):
     try:
         yt = YouTube(yt_url, on_progress_callback=on_progress)
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+
+        if not stream:
+            raise HTTPException(status_code=404, detail="No suitable stream found")
+
         buffer = io.BytesIO()
         stream.stream_to_buffer(buffer)
         buffer.seek(0)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error downloading video: {str(e)}")
+
+        
+        filename = "".join(c if c.isalnum() or c in "._-" else "_" for c in yt.title) + ".mp4"
+
+        headers = {"Content-Disposition": f"attachment; filename={filename}"}
+        return StreamingResponse(buffer, media_type="video/mp4", headers=headers)
     
-    filename = yt.title.replace(" ","_") + ".mp4"
-
-    headers = {
-        "Content-Disposition": f"attachment; filename={filename}"
-    }
-
-    return StreamingResponse(buffer, media_type="video/mp4",headers=headers)
+    except Exception as e:
+        print("ERROR:", str(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error downloading video: {str(e)}")
