@@ -30,7 +30,7 @@ async def download_video(request: Request):
         raise HTTPException(status_code=400, detail="Missing YouTube URL")
 
     try:
-        yt = YouTube(yt_url, on_progress_callback=on_progress)
+        yt = YouTube(yt_url, on_progress_callback=on_progress, client="WEB", use_po_token=True)
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
 
         if not stream:
