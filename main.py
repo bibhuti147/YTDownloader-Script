@@ -2,9 +2,18 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
+from fastapi.middleware.cors import CORSMiddleware
 import io
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://youtube-video-downloader-spa.vercel.app/"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
