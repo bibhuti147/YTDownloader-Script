@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
@@ -9,7 +9,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://youtube-video-downloader-spa.vercel.app/"],
+    allow_origins=["https://youtube-video-downloader-spa.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,12 +21,15 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/yurl/{url}")
-async def get_video(url: str):
-    url = f'https://www.youtube.com/watch?v={url}'
+@app.post("/download-video")
+async def download_video(request: Request):
+    data = await request.json()
+    yt_url = data.get("url")
+    if not yt_url:
+        raise HTTPException(status_code=400, detail="Missing YouTube URL")
 
     try:
-        yt = YouTube(url, on_progress_callback=on_progress)
+        yt = YouTube(yt_url, on_progress_callback=on_progress)
         stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
         buffer = io.BytesIO()
         stream.stream_to_buffer(buffer)
