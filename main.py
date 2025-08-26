@@ -8,13 +8,7 @@
 
 # app = FastAPI()
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["https://youtube-video-downloader-spa.vercel.app"],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+
 
 
 # @app.get("/")
@@ -55,9 +49,18 @@
 import subprocess
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse 
+from fastapi.middleware.cors import CORSMiddleware
 import uuid
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://youtube-video-downloader-spa.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/download-video")
 async def download_video(request: Request):
